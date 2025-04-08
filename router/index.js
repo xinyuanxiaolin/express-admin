@@ -16,5 +16,7 @@ router.use(require("./user"));
 router.use(require("./role"));
 // 菜单
 router.use(require("./menu"));
+//对手
+router.use(require("./duishou.js"))
 
 module.exports = router;
