@@ -192,6 +192,7 @@ module.exports = {
                         user.dataValues.roles = data[0][0];
                         user.dataValues.menuPermission = data[1][0];
                         user.dataValues.permission = [];
+                        // 如果是管理员则给前端一个全部菜单的标识
                         if (data[0][0].some((item) => item.perms === "admin")) {
                             user.dataValues.permission = ["*:*:*"];
                         } else {
