@@ -76,7 +76,7 @@ CREATE TABLE `menu` (
 
 LOCK TABLES `menu` WRITE;
 /*!40000 ALTER TABLE `menu` DISABLE KEYS */;
-INSERT INTO `menu` VALUES ('06ebb884-3348-4e65-840d-7dce839d7e31',2,'角色管理','/role/index','role','el-icon-s-custom',2,0,'2023-08-09 14:57:05','2025-04-08 15:54:07','admin','0'),('22b912e6-2b33-4c80-8db1-8c31a9f41b46',2,'菜单管理','/menu/index','menu','el-icon-menu',3,0,'2023-01-10 17:46:10','2025-04-08 15:54:17','admin','0'),('765c3841-551f-44fd-a830-de8230ea1601',2,'用户管理','/user/index','user','el-icon-user',1,0,'2023-01-10 17:45:42','2025-04-08 15:52:55','admin','0'),('b7e54af3-d886-4d78-bcd2-ed32bccd35f6',2,'文件管理','/file/index','file','el-icon-folder-opened',4,0,'2023-01-13 17:19:11','2025-04-08 15:54:23','admin','0'),('ff24a056-858d-437e-85bf-d9e0b2801e61',2,'个人信息','/userInfo/index','userInfo',NULL,1,1,'2023-07-25 15:04:27','2025-04-08 16:08:23',NULL,'0');
+INSERT INTO `menu` VALUES ('06ebb884-3348-4e65-840d-7dce839d7e31',2,'角色管理','/role/index','role','el-icon-s-custom',2,0,'2023-08-09 14:57:05','2025-04-08 15:54:07','admin','0'),('22b912e6-2b33-4c80-8db1-8c31a9f41b46',2,'菜单管理','/menu/index','menu','el-icon-menu',3,0,'2023-01-10 17:46:10','2025-04-08 15:54:17','admin','0'),('760a5efe-5953-4c7c-b086-66357d56f98f',2,'对手短剧情况','/duishou/duanju/index','duishou/duanju','el-icon-s-claim',1,0,'2025-04-09 11:23:39','2025-04-09 11:24:06',NULL,'ee27739d-4063-458c-9d87-0be66dec34df'),('765c3841-551f-44fd-a830-de8230ea1601',2,'用户管理','/user/index','user','el-icon-user',1,0,'2023-01-10 17:45:42','2025-04-08 15:52:55','admin','0'),('b7e54af3-d886-4d78-bcd2-ed32bccd35f6',2,'文件管理','/file/index','file','el-icon-folder-opened',4,0,'2023-01-13 17:19:11','2025-04-08 15:54:23','admin','0'),('ee27739d-4063-458c-9d87-0be66dec34df',1,'对手管理',NULL,'duishou','el-icon-s-help',1,0,'2025-04-09 11:22:44','2025-04-09 11:22:44',NULL,'0'),('ff24a056-858d-437e-85bf-d9e0b2801e61',2,'个人信息','/userInfo/index','userInfo',NULL,1,1,'2023-07-25 15:04:27','2025-04-08 16:08:23',NULL,'0');
 /*!40000 ALTER TABLE `menu` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -212,6 +212,35 @@ INSERT INTO `userinfo` VALUES ('15fbd8cf-9acf-4e0c-87b6-14b6376ac214','upload/20
 UNLOCK TABLES;
 
 --
+-- Table structure for table `video_info`
+--
+
+DROP TABLE IF EXISTS `video_info`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `video_info` (
+  `id` char(36) NOT NULL,
+  `platform_name` varchar(100) NOT NULL,
+  `title` varchar(255) NOT NULL,
+  `link` text NOT NULL,
+  `update_time` datetime NOT NULL,
+  `batch_time` date NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=MyISAM AUTO_INCREMENT=5 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `video_info`
+--
+
+LOCK TABLES `video_info` WRITE;
+/*!40000 ALTER TABLE `video_info` DISABLE KEYS */;
+INSERT INTO `video_info` VALUES ('1','姚记体育','逆命为光：白月光觉醒计划','https://www.dstinnolab.com/voddetail/99563.html','2025-04-08 11:37:19','2025-04-08','2025-04-08 09:19:27'),('2','一起看APP','她去哪了','https://www.dstinnolab.com/voddetail/99562.html','2025-04-08 11:37:19','2025-04-08','2025-04-08 09:19:27'),('3','剧乐轩','宗门女配觉醒了','https://www.dstinnolab.com/voddetail/99561.html','2025-04-08 11:37:19','2025-04-08','2025-04-08 09:19:27'),('4','剧乐轩','弟弟班主任居然是我初恋','https://www.dstinnolab.com/voddetail/99560.html','2025-04-08 11:37:19','2025-04-08','2025-04-08 09:19:27');
+/*!40000 ALTER TABLE `video_info` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Dumping routines for database 'gh-express-db'
 --
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -224,4 +253,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-04-08 16:21:15
+-- Dump completed on 2025-04-09 12:06:58

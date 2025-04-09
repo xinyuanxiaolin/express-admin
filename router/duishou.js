@@ -7,5 +7,5 @@ const router = express.Router();
 */
 
 // 获取对手数据情况
-router.post("/duishou/video_info", DuishouControler.videoInfo);
+router.get("/duishou/video_info", DuishouControler.getVideoList);
 module.exports = router;

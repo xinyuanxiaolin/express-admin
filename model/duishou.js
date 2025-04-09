@@ -43,6 +43,8 @@ const DuishouModel = db.define(
         // 防止自动复数化
         freezeTableName: true,
         comment: "对手短剧情况",
+        //禁止 Sequelize 自动添加 createdAt 和 updatedAt
+        timestamps: false
     }
 );
 
