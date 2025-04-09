@@ -2,7 +2,9 @@
 node_modules
 /dist
 /TODO.local.md
-upload
+upload/*
+!upload/
+!upload/.gitkeep
 package-lock.json
 yarn.lock
 # local env files
