@@ -7,7 +7,7 @@ const options = {
     definition: {
         openapi: "3.0.0",
         info: {
-            title: "express后台管理系统",
+            title: "短剧站群后台管理系统",
             version: "1.0.0",
             description: ``,
         },
