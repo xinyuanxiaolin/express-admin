@@ -18,5 +18,7 @@ router.use(require("./role"));
 router.use(require("./menu"));
 //对手
 router.use(require("./duishou.js"))
+//站群
+router.use(require("./zhanqun.js"))
 
 module.exports = router;
