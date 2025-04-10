@@ -1,4 +1,4 @@
-// controller/duishouController.js
+const { Op } = require("sequelize");
 const DuishouModel = require("../model/duishou");
 
 module.exports = {
@@ -7,6 +7,7 @@ module.exports = {
       const {
         platform_name,
         batch_time,
+        search_name,
         page = 1,
         page_size = 10,
       } = req.query;
@@ -18,7 +19,17 @@ module.exports = {
       }
 
       if (batch_time) {
-        where.batch_time = batch_time;
+        // 查询当天所有时间段内的数据
+        where.batch_time = {
+          [Op.gte]: `${batch_time} 00:00:00`,
+          [Op.lt]: `${batch_time} 23:59:59`,
+        };
+      }
+
+      if (search_name) {
+        where.title = {
+          [Op.like]: `%${search_name}%`,
+        };
       }
 
       const { count, rows } = await DuishouModel.findAndCountAll({
