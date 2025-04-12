@@ -5,7 +5,7 @@ module.exports = {
     // 令牌key
     secretKEY: "Zeratul",
     // 过期时间
-    expiresIn: "1800s",
+    expiresIn: "7d",
     // 开启数据表同步
     tableSync: true,
     // 邮件配置 POP3/SMTP服务
