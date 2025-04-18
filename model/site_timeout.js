@@ -1,5 +1,7 @@
 const { DataTypes } = require("sequelize");
 let db = require("../config/config.sequelize");
+const { tableSync } = require("../config/config.default"); // 配置文件
+
 // 测速模型
 const TimeoutModel = db.define(
     "site_timeout",
@@ -38,5 +40,10 @@ const TimeoutModel = db.define(
         timestamps: false
     }
 );
+
+
+TimeoutModel.sync({ alter: tableSync }).then(() => {
+    console.log("网速检测表已同步!");
+});
 
 module.exports = TimeoutModel;
