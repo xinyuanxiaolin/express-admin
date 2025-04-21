@@ -69,35 +69,34 @@ module.exports = {
           where[Op.or] = orConditions;
         }
       }
+      if (sort_field && sort_order) {
+        // 其他情况统一查询
+        const all = await ShouluModel.findAll({ where });
 
-      // 其他情况统一查询
-      const all = await ShouluModel.findAll({ where });
-
-      // 排序逻辑
-      let sorted = all;
-      if (sort_field === "shoulu_time" && sort_order) {
-        sorted = all.sort((a, b) => {
-
-          const t1 = parseTimeValue(a.shoulu_time);
-          const t2 = parseTimeValue(b.shoulu_time);
-          return sort_order === "asc" ? t1 - t2 : t2 - t1;
-        });
-      } else if (sort_field && sort_order) {
-        // 其他字段排序
-        sorted = all.sort((a, b) => {
-          const aVal = a[sort_field];
-          const bVal = b[sort_field];
-          return sort_order === "asc" ? (aVal > bVal ? 1 : -1) : (aVal < bVal ? 1 : -1);
-        });
-      } else {
-        // 默认按 update_time 降序
-        sorted = all.sort((a, b) =>
-          moment(b.update_time).valueOf() - moment(a.update_time).valueOf()
+        // 排序逻辑
+        let sorted = all;
+        if (sort_field === "shoulu_time" && sort_order) {
+          sorted = all.sort((a, b) => {
+            const t1 = parseTimeValue(a.shoulu_time);
+            const t2 = parseTimeValue(b.shoulu_time);
+            return sort_order === "asc" ? t1 - t2 : t2 - t1;
+          });
+        }
+        const paged = sorted.slice((page - 1) * page_size, page * page_size);
+        return res.send(
+          successMsg({ total: sorted.length, data: paged }, "查询成功！")
         );
-      }
+      } else {
+        // 不需要收录排序
+        const { count, rows } = await ShouluModel.findAndCountAll({
+          where,
+          order: [["update_time", "DESC"]],
+          limit: parseInt(page_size),
+          offset: (page - 1) * page_size,
+        });
 
-      const paged = sorted.slice((page - 1) * page_size, page * page_size);
-      return res.send(successMsg({ total: sorted.length, data: paged }, "查询成功！"));
+        res.send(successMsg({ total: count, data: rows }, "查询成功!"));
+      }
     } catch (err) {
       next(err);
     }
