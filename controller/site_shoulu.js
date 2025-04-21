@@ -8,86 +8,135 @@ module.exports = {
       const {
         site_name,
         title,
-        shoulu_type, // 1 日收 2 周收 3 月收
+        shoulu_type,
         page = 1,
-        page_size = 10
+        page_size = 10,
+        sort_field,
+        sort_order
       } = req.query;
 
       const where = {};
+      if (site_name) where.site_name = { [Op.like]: `%${site_name}%` };
+      if (title) where.title = { [Op.like]: `%${title}%` };
 
-      // 模糊匹配网站名
-      if (site_name) {
-        where.site_name = { [Op.like]: `%${site_name}%` };
-      }
-
-      // 模糊匹配标题
-      if (title) {
-        where.title = { [Op.like]: `%${title}%` };
-      }
-
-      // 收录时间筛选
+      // 处理 shoulu_type 条件
       if (shoulu_type) {
-        let keywords = [];
+        const orConditions = [];
         switch (parseInt(shoulu_type)) {
-          case 1: // 日收：包含“小时”
-            keywords.push({ shoulu_time: { [Op.like]: `%小时%` } });
+          case 1:
+            orConditions.push({ shoulu_time: { [Op.like]: `%小时%` } });
             break;
-          case 2: // 周收：包含“小时”或“天”
-            keywords.push({ shoulu_time: { [Op.like]: `%小时%` } });
-            keywords.push({ shoulu_time: { [Op.like]: `%天%` } });
+          case 2:
+            orConditions.push({ shoulu_time: { [Op.like]: `%小时%` } });
+            orConditions.push({ shoulu_time: { [Op.like]: `%天%` } });
             break;
-          case 3: { // 月收：包含“小时”或“天”或“3月3日”这种在一个月内的
+          case 3: {
             const now = moment();
-            const oneMonthAgo = moment().subtract(1, 'months');
+            const oneMonthAgo = moment().subtract(1, "months");
 
-            const rows = await ShouluModel.findAll(); // 全部查出，过滤处理
+            const all = await ShouluModel.findAll({ where });
+            const filtered = all.filter((row) => {
+              const str = row.shoulu_time;
+              if (str.includes("年")) return false;
+              if (str.includes("小时") || str.includes("天")) return true;
 
-            const filtered = rows.filter(row => {
-              const timeStr = row.shoulu_time;
-
-              // 忽略带“年”的（例如“2024年3月5日”）
-              if (timeStr.includes("年")) return false;
-
-              // 包含“小时”或“天”直接匹配
-              if (timeStr.includes("小时") || timeStr.includes("天")) return true;
-
-              // 匹配 “3月5日” 这种字符串
-              const match = timeStr.match(/(\d{1,2})月(\d{1,2})日/);
+              const match = str.match(/(\d{1,2})月(\d{1,2})日/);
               if (match) {
-                const month = parseInt(match[1]);
-                const day = parseInt(match[2]);
-
-                const dateStr = `${moment().year()}-${month}-${day}`;
-                const date = moment(dateStr, "YYYY-M-D");
-
-                return date.isBetween(oneMonthAgo, now, null, '[]'); // 包含边界
+                const date = moment(`${moment().year()}-${match[1]}-${match[2]}`, "YYYY-M-D");
+                return date.isBetween(oneMonthAgo, now, null, "[]");
               }
 
               return false;
             });
 
-            const paged = filtered.slice((page - 1) * page_size, page * page_size);
-            return res.send(
-              successMsg({ total: filtered.length, data: paged }, "查询成功！")
-            );
+            // 自定义排序只在 shoulu_time 被指定为排序字段时执行
+            const sorted = sort_field === "shoulu_time" && sort_order
+              ? filtered.sort((a, b) => {
+                  const t1 = parseTimeValue(a.shoulu_time);
+                  const t2 = parseTimeValue(b.shoulu_time);
+                  return sort_order === "asc" ? t1 - t2 : t2 - t1;
+                })
+              : filtered.sort((a, b) =>
+                  moment(b.update_time).valueOf() - moment(a.update_time).valueOf()
+                );
+
+            const paged = sorted.slice((page - 1) * page_size, page * page_size);
+            return res.send(successMsg({ total: filtered.length, data: paged }, "查询成功！"));
           }
         }
 
-        // 普通数据库匹配的情况（不包含 3月x日）
-        where[Op.or] = keywords;
+        if (orConditions.length > 0) {
+          where[Op.or] = orConditions;
+        }
       }
 
-      // 正常分页
-      const { count, rows } = await ShouluModel.findAndCountAll({
-        where,
-        order: [["update_time", "DESC"]],
-        limit: parseInt(page_size),
-        offset: (page - 1) * page_size,
-      });
+      // 其他情况统一查询
+      const all = await ShouluModel.findAll({ where });
 
-      res.send(successMsg({ total: count, data: rows }, "查询成功!"));
-    } catch (error) {
-      next(error);
+      // 排序逻辑
+      let sorted = all;
+      if (sort_field === "shoulu_time" && sort_order) {
+        sorted = all.sort((a, b) => {
+
+          const t1 = parseTimeValue(a.shoulu_time);
+          const t2 = parseTimeValue(b.shoulu_time);
+          return sort_order === "asc" ? t1 - t2 : t2 - t1;
+        });
+      } else if (sort_field && sort_order) {
+        // 其他字段排序
+        sorted = all.sort((a, b) => {
+          const aVal = a[sort_field];
+          const bVal = b[sort_field];
+          return sort_order === "asc" ? (aVal > bVal ? 1 : -1) : (aVal < bVal ? 1 : -1);
+        });
+      } else {
+        // 默认按 update_time 降序
+        sorted = all.sort((a, b) =>
+          moment(b.update_time).valueOf() - moment(a.update_time).valueOf()
+        );
+      }
+
+      const paged = sorted.slice((page - 1) * page_size, page * page_size);
+      return res.send(successMsg({ total: sorted.length, data: paged }, "查询成功！"));
+    } catch (err) {
+      next(err);
     }
-  },
+  }
 };
+
+// 转换收录时间为排序值
+function parseTimeValue(str) {
+  if (!str) return -999999;  // 默认最小值
+
+  // 处理"小时"和"天"的特殊排序
+  if (str.includes("小时")) {
+    const match = str.match(/(\d+)\s*小时/);
+    return moment().unix() - parseInt(match ? match[1] : 0); // 用当前时间戳-小时，保证小时最大
+  }
+
+  if (str.includes("天")) {
+    const match = str.match(/(\d+)\s*天/);
+    return moment().unix() - parseInt(match ? match[1] : 0); // 用当前时间戳-月+日，保证第二大
+  }
+
+  // 处理没有年份的日期（将其转化为当前年份的日期）
+  if (str.includes("月") && str.includes("日") && !str.includes("年")) {
+    const match = str.match(/(\d{1,2})月(\d{1,2})日/);
+    if (match) {
+      const date = moment(`${moment().year()}-${match[1]}-${match[2]}`, "YYYY-M-D");
+      return date.unix();  // 以当前年份的日期进行比较
+    }
+  }
+
+  // 处理有年份的日期
+  if (str.includes("年") && str.includes("月") && str.includes("日")) {
+    const match = str.match(/(\d{4})年(\d{1,2})月(\d{1,2})日/);
+    if (match) {
+      const date = moment(`${match[1]}-${match[2]}-${match[3]}`, "YYYY-MM-DD");
+      return date.unix();  // 使用 Unix 时间戳进行正常排序
+    }
+  }
+
+  return -999999;  // 无法识别的最小值
+}
+
