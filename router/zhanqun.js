@@ -23,6 +23,8 @@ router.get("/zhanqun/site_shoulu",siteShouluController.getShouluInfo)
 router.get("/shoulu/export/all",exportController.exportShouluAll)
 //导出周收情况excel
 router.get("/shoulu/export/week",exportController.exportWeekly)
+// 导出所有蜘蛛excel
+router.get("/spider/export/all",exportController.exportSpiderAll)
 
 
 module.exports = router;

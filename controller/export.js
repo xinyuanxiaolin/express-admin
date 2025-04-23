@@ -1,7 +1,7 @@
 // 导出表格行为控制层
 const { generateExcel } = require("../util/exportExcel");
 const ShouluModel = require("../model/site_shoulu");
-
+const SpiderModel = require("../model/spider");
 module.exports = {
   /* 
         收录情况表格
@@ -83,6 +83,46 @@ module.exports = {
     res.setHeader(
       "Content-Disposition",
       "attachment; filename=shoulu_weekly.xlsx"
+    );
+
+    await workbook.xlsx.write(res);
+    res.end();
+  },
+  /* 
+      站群蜘蛛情况表格
+  */
+  // 导出所有
+  async exportSpiderAll(req, res) {
+    const rows = await SpiderModel.findAll({ raw: true });
+    // 自定义 data 格式：对 rows 进行处理并构建新的 data 数组
+    const data = rows.map((row) => {
+      return {
+        domain: row.domain, 
+        type: row.type == 1 ? "头条" : "百度", 
+        count: row.count, 
+      };
+    });
+    const workbook = await generateExcel({
+      sheets: [
+        {
+          name: "站群蜘蛛数据",
+          columns: [
+            { label: "网站名", prop: "domain" },
+            { label: "蜘蛛类型", prop: "type" },
+            { label: "访问次数", prop: "count" },
+          ],
+          data: data,
+        },
+      ],
+    });
+
+    res.setHeader(
+      "Content-Type",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    );
+    res.setHeader(
+      "Content-Disposition",
+      'attachment; filename="spider.xlsx"'
     );
 
     await workbook.xlsx.write(res);
