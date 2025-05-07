@@ -5,16 +5,16 @@ module.exports = {
   
   async writeSpiderLogs(req, res, next) {
     try {
-      const { type, uri, referer, ip, host, time } = req.body;
+      const { type, url, referer, ip, host, time } = req.body;
 
-      if (!type || !uri || !ip || !host || !time) {
+      if (!type || !url || !ip || !host || !time) {
         return res.status(400).json({ message: "缺少必要参数" });
       }
 
       await SpiderGenZongModel.create({
         id: uuidv4(),
         type,
-        url: uri,
+        url: url,
         referer,
         ip,
         host,
