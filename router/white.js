@@ -4,6 +4,7 @@ let urlList = []
 let whiteList = [
     '/user/login',
     '/user/register',
+    '/zhanqun/spider/write_log'
 ]
 whiteList.map(item => {
     urlList.push(`${apiPrefix}${item}`)
