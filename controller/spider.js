@@ -5,23 +5,46 @@ const ShouluModel = require("../model/site_shoulu");
 module.exports = {
   async getSpider(req, res, next) {
     try {
-      const { domain, date, type, page = 1, page_size = 10, by_count } = req.query;
+      const { domain, date, type, page = 1, page_size = 10, by_count, daoban } = req.query;
       const where = {};
 
+      // 域名筛选
       if (domain) {
         where.domain = {
           [Op.like]: `%${domain}%`
         };
       }
 
+      // 类型筛选
       if (type) {
         where.type = type;
       }
 
+      // 日期筛选
       if (date) {
         where.created_time = {
           [Op.gte]: `${date} 00:00:00`,
           [Op.lt]: `${date} 23:59:59`,
+        };
+      }
+
+      // 伪造站点筛选（daoban）
+      if (daoban === "1") {
+        const web = [
+          "tbfys.com", "bhkys.com", "chgys.com", "ctpys.com", "dglys.com",
+          "fbhys.com", "flfys.com", "fzcys.com", "gcqys.com", "gndys.com",
+          "gslys.com", "hgfys.com", "hqfys.com", "jdgys.com", "jknys.com",
+          "kklys.com", "kpmys.com", "kpzys.com", "kqnys.com", "kzzys.com",
+          "ldhys.com", "lzkys.com", "ngdys.com", "npjys.com", "nqxys.com",
+          "nsbys.com", "nxcys.com", "nxzys.com", "pbdys.com", "plpys.com",
+          "qbpys.com", "qdzys.com", "qffys.com", "qjtys.com", "rjxys.com",
+          "rkmys.com", "rqcys.com", "rtcys.com", "rtpys.com", "sfmys.com",
+          "skhys.com", "smdys.com", "tbqys.com", "tdzys.com", "tpnys.com",
+          "trcys.com", "xgcys.com", "xgnys.com", "xrlys.com", "zfhys.com"
+        ];
+        where.domain = {
+          ...(where.domain || {}),
+          [Op.in]: web
         };
       }
 
@@ -41,10 +64,9 @@ module.exports = {
         offset: (page - 1) * page_size,
       });
 
-      // 获取当前页所有 domain
       const domains = rows.map(row => row.domain);
 
-      // 去 ShouluModel 统计每个 domain 的数量（site_name 对应 domain）
+      // 查询收录数据
       const shouluCounts = await ShouluModel.findAll({
         attributes: ['site_name', [literal('COUNT(*)'), 'total']],
         where: {
@@ -55,15 +77,13 @@ module.exports = {
         group: ['site_name']
       });
 
-      // 转成 map，便于赋值
       const countMap = {};
       shouluCounts.forEach(item => {
         countMap[item.site_name] = item.dataValues.total;
       });
 
-      // 给每条 spider 数据加上 shoulu_all 字段
       const result = rows.map(row => {
-        const data = row.toJSON(); // 如果你用的是Sequelize的实例，需要转JSON
+        const data = row.toJSON();
         data.shoulu_all = countMap[data.domain] || 0;
         return data;
       });
