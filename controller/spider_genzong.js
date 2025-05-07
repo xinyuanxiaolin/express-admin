@@ -62,7 +62,7 @@ module.exports = {
         offset: (parseInt(page) - 1) * parseInt(page_size),
       });
 
-      res.json({ total: count, data: rows });
+      res.send(successMsg({ total: count, data: rows }, "查询成功!"));
     } catch (err) {
       next(err);
     }
