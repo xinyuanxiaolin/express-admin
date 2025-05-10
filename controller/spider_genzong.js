@@ -86,7 +86,6 @@ async getSpiderLogs(req, res, next) {
       referer,
       catch_time
     } = req.query;
-
     const where = {};
     if (host) where.host = { [Op.like]: `%${host}%` };
     if (ip) where.ip = { [Op.like]: `%${ip}%` };
@@ -108,10 +107,11 @@ async getSpiderLogs(req, res, next) {
         [Op.lt]: new Date(`${catch_time} 23:59:59`),
       };
     } else {
-      // 没传时间，查最近 4 周
-      targetTables = getRecentWeekTables(4);
+      // 没传时间，查最近 1 周
+      targetTables = getRecentWeekTables(1);
       for (const table of targetTables) {
         await ensureTableExists(table);
+
       }
     }
 
