@@ -120,7 +120,7 @@ async getSpiderLogs(req, res, next) {
     for (const table of targetTables) {
       const Model = getSpiderModel(table);
       try {
-        const data = await Model.findAll({ where, limit: 1000 });
+        const data = await Model.findAll({ where, limit: 5000 });
         allResults.push(...data.map((d) => d.toJSON()));
       } catch (_) {
         // 某些表结构不匹配，忽略
