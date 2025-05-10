@@ -84,7 +84,8 @@ async getSpiderLogs(req, res, next) {
       type,
       url,
       referer,
-      catch_time
+      catch_time,
+      daoban
     } = req.query;
     const where = {};
     if (host) where.host = { [Op.like]: `%${host}%` };
@@ -93,6 +94,29 @@ async getSpiderLogs(req, res, next) {
     if (url) where.url = { [Op.like]: `%${url}%` };
     if (referer) where.referer = { [Op.like]: `%${referer}%` };
     let targetTables = [];
+
+    // 伪造站点筛选（daoban）
+    if (daoban === "1") {
+      const web = [
+        "tbfys.com", "bhkys.com", "chgys.com", "ctpys.com", "dglys.com",
+        "fbhys.com", "flfys.com", "fzcys.com", "gcqys.com", "gndys.com",
+        "gslys.com", "hgfys.com", "hqfys.com", "jdgys.com", "jknys.com",
+        "kklys.com", "kpmys.com", "kpzys.com", "kqnys.com", "kzzys.com",
+        "ldhys.com", "lzkys.com", "ngdys.com", "npjys.com", "nqxys.com",
+        "nsbys.com", "nxcys.com", "nxzys.com", "pbdys.com", "plpys.com",
+        "qbpys.com", "qdzys.com", "qffys.com", "qjtys.com", "rjxys.com",
+        "rkmys.com", "rqcys.com", "rtcys.com", "rtpys.com", "sfmys.com",
+        "skhys.com", "smdys.com", "tbqys.com", "tdzys.com", "tpnys.com",
+        "trcys.com", "xgcys.com", "xgnys.com", "xrlys.com", "zfhys.com"
+      ];
+
+      where.host = {
+        [Op.or]: web.map(domain => ({
+          [Op.like]: `%${domain}%`
+        }))
+      };
+    }
+
 
     if (catch_time) {
       // 用户指定了时间，只查对应表

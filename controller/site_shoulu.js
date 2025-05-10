@@ -12,12 +12,32 @@ module.exports = {
         page = 1,
         page_size = 10,
         sort_field,
-        sort_order
+        sort_order,
+        daoban
       } = req.query;
 
       const where = {};
       if (site_name) where.site_name = { [Op.like]: `%${site_name}%` };
       if (title) where.title = { [Op.like]: `%${title}%` };
+      // 伪造站点筛选（daoban）
+      if (daoban === "1") {
+        const web = [
+          "tbfys.com", "bhkys.com", "chgys.com", "ctpys.com", "dglys.com",
+          "fbhys.com", "flfys.com", "fzcys.com", "gcqys.com", "gndys.com",
+          "gslys.com", "hgfys.com", "hqfys.com", "jdgys.com", "jknys.com",
+          "kklys.com", "kpmys.com", "kpzys.com", "kqnys.com", "kzzys.com",
+          "ldhys.com", "lzkys.com", "ngdys.com", "npjys.com", "nqxys.com",
+          "nsbys.com", "nxcys.com", "nxzys.com", "pbdys.com", "plpys.com",
+          "qbpys.com", "qdzys.com", "qffys.com", "qjtys.com", "rjxys.com",
+          "rkmys.com", "rqcys.com", "rtcys.com", "rtpys.com", "sfmys.com",
+          "skhys.com", "smdys.com", "tbqys.com", "tdzys.com", "tpnys.com",
+          "trcys.com", "xgcys.com", "xgnys.com", "xrlys.com", "zfhys.com"
+        ];
+        where.site_name = {
+          ...(where.site_name || {}),
+          [Op.in]: web
+        };
+      }
 
       // 处理 shoulu_type 条件
       if (shoulu_type) {
